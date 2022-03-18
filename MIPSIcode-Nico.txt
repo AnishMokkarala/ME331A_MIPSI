@@ -1,0 +1,46 @@
+
+NewtonianFrame N 
+RigidBody A % Rod
+RigidBody C % Ring
+RigidFrame B % charactrizes Ccm rotation about hinge point
+Variable qA'' %% Az> measure of angle from Nx> to Ax>
+Variable qB'' %% Bz> measure of angle from Ax> to Bx>
+Variable qC'' %% Cz> measure of angle from Bx> to Cx>
+%% Declare Constants
+Constant L1 = 0.6 m 
+Constant L2 = 0.4 m
+Constant r = 0.25 m
+Constant g = 9.8 m/s^2
+Constant L = L1 + L2
+%% Set Body Masses
+A.SetMass(mA = 1 kg)
+C.SetMass(mC = 2 kg)
+%% Set Inertia Dyadics About Centers of Mass
+A.SetInertia(Acm, IAxx = mA * (1/12*L^2 + (L1-L2)^2/4), IAyy = 0, IAzz = mA*(1/12*L^2 + (L1-L2)^2/2))
+C.SetInertia(Ccm, ICxx = 1/4*mC*r^2, ICyy = 1/4*mC*r^2, ICzz = 1/2*mC*r^2)
+% Establish Rotation Matrices
+A.SetRotationMatrixX(N,qA)
+A.SetRotationMatrixZ(N,qA)
+B.SetRotationMatrixZ(A, qB)
+C.SetRotationMatrixZ(B, qC)
+%% Establish positionality
+p_No_Ccm> = -L2 * Ay> - R * By>
+p_No_Acm> = (L1-L2)/2 * Ay>
+Acm.Translate(No, (L1/L2)/2*Ay>)
+Point Ac
+Ac.Translate(No, -L2*Ay>)
+Ccm.Translate(No, -L2*Ay> - r*By>)
+% Establish System
+System S(A, B, C)
+% Establish Angular Velocity of C in B (not sure if needed using qC' over wC)
+C.SetAngularVelocityAcceleration(B, qC'*Bz>)
+% Add forces to system
+S.AddForceGravity(-g*Ny>)
+
+% Solve for System Dynamics
+Dynamics[1] = Dot(Az>, S.GetDynamics(No))
+Dynamics[2] = Dot(Az>, C.GetDynamics(Ac))
+Dynamics[3] = Dot(Az>, C.GetDynamics(Ccm))
+Input qA' = 1 deg/s
+
+Solve(Dynamics = 0, qA'', qB'', qC'')
