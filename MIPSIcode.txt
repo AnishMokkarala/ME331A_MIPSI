@@ -1,0 +1,55 @@
+NewtonianFrame N
+RigidBody A % Rod
+RigidBody C % Ring
+RigidFrame B % to characterise Ccm rotation about hinge point AC
+
+Variable qA'' % Az> measure of angle from Nx> to Ax>
+Variable qB'' % Bz> measure of angle from Ax> to Bx>
+Variable wC' % Bz> measure of C's angular velocity in B
+Constant L1=0.6 m
+Constant L2=0.4 m
+Constant r=0.25 m
+Constant g=9.8 m/s^2
+A.SetMass(mA=2 kg)
+C.SetMass(mC=1 kg)
+A.SetInertia(Acm, IAxx, IAyy, IAzz=0.17 kg*m^2)
+C.SetInertia(Ccm, B, IBxx, IByy, IBzz= 0.0625 kg*m^2)
+
+%Specifying rotations
+A.RotateZ(N,qA)
+B.RotateZ(A,qB)
+C.SetAngularVelocityAcceleration(B, wC*Bz>)
+
+%Specifying points
+Acm.Translate(No, (L1-L2)/2*Ay>)
+Ao.Translate(Acm, -(L1+L2)/2*Ay>)
+Ccm.Translate(Ao, -r*By>)
+
+%Specifying forces
+System.AddForceGravity(-g*Ny>)
+
+Dynamics[1]=Dot(Az>,System(A,C).GetDynamics(No))
+Dynamics[2]=Dot(Az>,C.GetDynamics(Ao))
+Dynamics[3]=Dot(Az>,C.GetDynamics(Ccm))
+
+KineticEnergy = System.GetKineticEnergy()
+GravityPotentialEnergy = System.GetForceGravityPotentialEnergy(  -g*Ny>,  No  )
+MechanicalEnergy = KineticEnergy + GravityPotentialEnergy
+%xc=Dot(Nx>,Ccm.GetPostion(No))
+%yc=Dot(Ny>,Ccm.GetPosition(No)
+
+Input  tFinal = 4 sec,  tStep = 0.02 sec,  absError = 1.0E-08
+Input  wC = 5 rad/sec, qA=0 deg, qB=0 deg, qA'=0 deg/sec, qB'=0 deg/sec
+
+Solve(Dynamics=0,qA'',qB'',wC')
+
+Output t sec, wC rad/sec, qA deg, qB deg, MechanicalEnergy Joules
+ODE() MIPSI
+
+Plot MIPSI.1 [1,5]
+Quit
+
+
+
+
+
