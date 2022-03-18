@@ -13,11 +13,11 @@ Constant r = 0.25 m
 Constant g = 9.8 m/s^2
 Constant L = L1 + L2
 %% Set Body Masses
-A.SetMass(mA = 1 kg)
-C.SetMass(mC = 2 kg)
+A.SetMass(mA = 2 kg)
+C.SetMass(mC = 1 kg)
 %% Set Inertia Dyadics About Centers of Mass
-A.SetInertia(Acm, IAxx = mA * (1/12*L^2 + (L1-L2)^2/4), IAyy = 0, IAzz = mA*(1/12*L^2 + (L1-L2)^2/2))
-C.SetInertia(Ccm, ICxx = 1/4*mC*r^2, ICyy = 1/4*mC*r^2, ICzz = 1/2*mC*r^2)
+A.SetInertia(Acm, IAxx, IAyy, IAzz = mA*(1/12*L^2))
+C.SetInertia(Ccm, ICxx, ICyy, ICzz = 1/2*mC*r^2)
 % Establish Rotation Matrices
 A.SetRotationMatrixX(N,qA)
 A.SetRotationMatrixZ(N,qA)
@@ -33,7 +33,7 @@ Ccm.Translate(No, -L2*Ay> - r*By>)
 % Establish System
 System S(A, B, C)
 % Establish Angular Velocity of C in B (not sure if needed using qC' over wC)
-C.SetAngularVelocityAcceleration(B, qC'*Bz>)
+% C.SetAngularVelocityAcceleration(B, qC'*Bz>)
 % Add forces to system
 S.AddForceGravity(-g*Ny>)
 
@@ -41,6 +41,10 @@ S.AddForceGravity(-g*Ny>)
 Dynamics[1] = Dot(Az>, S.GetDynamics(No))
 Dynamics[2] = Dot(Az>, C.GetDynamics(Ac))
 Dynamics[3] = Dot(Az>, C.GetDynamics(Ccm))
-Input qA' = 1 deg/s
+Input qC' = 5 rad/s
 
-Solve(Dynamics = 0, qA'', qB'', qC'')
+ODE(Dynamics = 0, qA'', qB'', qC'')
+
+Output qA, qB, qC
+
+Plot ODE.1
